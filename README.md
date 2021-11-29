@@ -57,7 +57,8 @@ variables, err := client.DevcycleApi.AllVariables(auth, user)
 ### Grabbing Variable By Key
 This method will fetch a specific variable by key for a given user. It will return the variable 
 object from the server unless an error occurs or the server has no response. In that case it will return
-a variable object with the value set to whatever was passed in as the `defaultValue` parameter.
+a variable object with the value set to whatever was passed in as the `defaultValue` parameter, 
+and the `IsDefaulted` field boolean on the variable will be true.
 ```golang
 variable, err := client.DevcycleApi.Variable(auth, user, "variable-key", "default_value")
 ```

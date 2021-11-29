@@ -166,7 +166,7 @@ func (a *DVCClientService) Variable(ctx context.Context, body UserData, key stri
 		localVarFileBytes  []byte
 		localVarReturnValue Variable
 	)
-     defaultRetVal := Variable{Value: &defaultValue, Key: key}
+     defaultRetVal := Variable{Value: &defaultValue, Key: key, IsDefaulted: true}
 
 	// create path and map variables
 	localVarPath := a.client.cfg.BasePath + "/v1/variables/{key}"

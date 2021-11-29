@@ -28,8 +28,14 @@ func main() {
       Type_: "customEvent",
       Target: "somevariable.key"}
 
-    vara, _ := client.DevcycleApi.Variable(auth, user, "elliot-asdasd", "test")
-    log.Printf("vara:%s", vara)
+    vara, _ := client.DevcycleApi.Variable(auth, user, "elliot-test", "test")
+    if !vara.IsDefaulted {
+        log.Printf("vara not defaulted:%b", vara.IsDefaulted)
+    }
+    varaDefaulted, _ := client.DevcycleApi.Variable(auth, user, "elliot-asdasd", "test")
+    if varaDefaulted.IsDefaulted {
+        log.Printf("vara defaulted:%b", varaDefaulted.IsDefaulted)
+    }
 
     response, _ := client.DevcycleApi.Track(auth, user, event)
     log.Printf(response.Message)
