@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
+	"net/http"
 	"net/url"
 	"strings"
 )
@@ -56,8 +57,6 @@ func (a *DVCClientService) AllFeatures(ctx context.Context, body UserData) (map[
 	var (
 		localVarHttpMethod  = strings.ToUpper("Post")
 		localVarPostBody    interface{}
-		localVarFileName    string
-		localVarFileBytes   []byte
 		localVarReturnValue map[string]Feature
 	)
 
@@ -66,25 +65,7 @@ func (a *DVCClientService) AllFeatures(ctx context.Context, body UserData) (map[
 
 	localVarHeaderParams := make(map[string]string)
 	localVarQueryParams := url.Values{}
-	localVarFormParams := url.Values{}
 
-	// to determine the Content-Type header
-	localVarHttpContentTypes := []string{"application/json"}
-
-	// set Content-Type header
-	localVarHttpContentType := selectHeaderContentType(localVarHttpContentTypes)
-	if localVarHttpContentType != "" {
-		localVarHeaderParams["Content-Type"] = localVarHttpContentType
-	}
-
-	// to determine the Accept header
-	localVarHttpHeaderAccepts := []string{"application/json"}
-
-	// set Accept header
-	localVarHttpHeaderAccept := selectHeaderAccept(localVarHttpHeaderAccepts)
-	if localVarHttpHeaderAccept != "" {
-		localVarHeaderParams["Accept"] = localVarHttpHeaderAccept
-	}
 	// body params
 	localVarPostBody = &body
 	if ctx != nil {
@@ -100,79 +81,20 @@ func (a *DVCClientService) AllFeatures(ctx context.Context, body UserData) (map[
 
 		}
 	}
-	r, err := a.client.prepareRequest(ctx, localVarPath, localVarHttpMethod, localVarPostBody, localVarHeaderParams, localVarQueryParams, localVarFormParams, localVarFileName, localVarFileBytes)
+
+	r, rBody, err := a.performRequest(ctx, localVarPath, localVarHttpMethod, localVarPostBody, localVarHeaderParams, localVarQueryParams)
+
 	if err != nil {
-		return localVarReturnValue, err
+		return nil, err
 	}
 
-	localVarHttpResponse, err := a.client.callAPI(r)
-	if err != nil || localVarHttpResponse == nil {
-		return localVarReturnValue, err
-	}
-
-	localVarBody, err := ioutil.ReadAll(localVarHttpResponse.Body)
-	localVarHttpResponse.Body.Close()
-	if err != nil {
-		return localVarReturnValue, err
-	}
-
-	if localVarHttpResponse.StatusCode < 300 {
+	if r.StatusCode < 300 {
 		// If we succeed, return the data, otherwise pass on to decode error.
-		err = a.client.decode(&localVarReturnValue, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
-		if err == nil {
-			return localVarReturnValue, err
-		}
+		err = a.client.decode(&localVarReturnValue, rBody, r.Header.Get("Content-Type"))
+		return localVarReturnValue, err
 	}
 
-	if localVarHttpResponse.StatusCode >= 300 {
-		newErr := GenericSwaggerError{
-			body:  localVarBody,
-			error: localVarHttpResponse.Status,
-		}
-		if localVarHttpResponse.StatusCode == 400 {
-			var v ErrorResponse
-			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.error = err.Error()
-				return localVarReturnValue, newErr
-			}
-			newErr.model = v
-			return localVarReturnValue, newErr
-		}
-		if localVarHttpResponse.StatusCode == 401 {
-			var v ErrorResponse
-			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.error = err.Error()
-				return localVarReturnValue, newErr
-			}
-			newErr.model = v
-			return localVarReturnValue, newErr
-		}
-		if localVarHttpResponse.StatusCode == 404 {
-			var v ErrorResponse
-			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.error = err.Error()
-				return localVarReturnValue, newErr
-			}
-			newErr.model = v
-			return localVarReturnValue, newErr
-		}
-		if localVarHttpResponse.StatusCode == 500 {
-			var v ErrorResponse
-			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.error = err.Error()
-				return localVarReturnValue, newErr
-			}
-			newErr.model = v
-			return localVarReturnValue, newErr
-		}
-		return localVarReturnValue, newErr
-	}
-
-	return localVarReturnValue, nil
+	return nil, a.handleError(r, rBody)
 }
 
 /*
@@ -214,8 +136,6 @@ func (a *DVCClientService) Variable(ctx context.Context, userdata UserData, key 
 	var (
 		localVarHttpMethod  = strings.ToUpper("Post")
 		localVarPostBody    interface{}
-		localVarFileName    string
-		localVarFileBytes   []byte
 		localVarReturnValue Variable
 	)
 
@@ -225,123 +145,32 @@ func (a *DVCClientService) Variable(ctx context.Context, userdata UserData, key 
 
 	localVarHeaderParams := make(map[string]string)
 	localVarQueryParams := url.Values{}
-	localVarFormParams := url.Values{}
 
-	// to determine the Content-Type header
-	localVarHttpContentTypes := []string{"application/json"}
-
-	// set Content-Type header
-	localVarHttpContentType := selectHeaderContentType(localVarHttpContentTypes)
-	if localVarHttpContentType != "" {
-		localVarHeaderParams["Content-Type"] = localVarHttpContentType
-	}
-
-	// to determine the Accept header
-	localVarHttpHeaderAccepts := []string{"application/json"}
-
-	// set Accept header
-	localVarHttpHeaderAccept := selectHeaderAccept(localVarHttpHeaderAccepts)
-	if localVarHttpHeaderAccept != "" {
-		localVarHeaderParams["Accept"] = localVarHttpHeaderAccept
-	}
 	// userdata params
 	localVarPostBody = &userdata
-	if ctx != nil {
-		// API Key Authentication
-		if auth, ok := ctx.Value(ContextAPIKey).(APIKey); ok {
-			var key string
-			if auth.Prefix != "" {
-				key = auth.Prefix + " " + auth.Key
-			} else {
-				key = auth.Key
-			}
-			localVarHeaderParams["Authorization"] = key
 
-		}
-	}
-	r, err := a.client.prepareRequest(ctx, localVarPath, localVarHttpMethod, localVarPostBody, localVarHeaderParams, localVarQueryParams, localVarFormParams, localVarFileName, localVarFileBytes)
+	r, body, err := a.performRequest(ctx, localVarPath, localVarHttpMethod, localVarPostBody, localVarHeaderParams, localVarQueryParams)
+
 	if err != nil {
 		return localVarReturnValue, err
 	}
 
-	localVarHttpResponse, err := a.client.callAPI(r)
-	if err != nil || localVarHttpResponse == nil {
-		return defaultRetVal, err
-	}
-
-	localVarBody, err := ioutil.ReadAll(localVarHttpResponse.Body)
-	localVarHttpResponse.Body.Close()
-	if err != nil {
-		return localVarReturnValue, err
-	}
-
-	if localVarHttpResponse.StatusCode < 300 {
+	if r.StatusCode < 300 {
 		// If we succeed, return the data, otherwise pass on to decode error.
-		err = a.client.decode(&localVarReturnValue, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
+		err = a.client.decode(&localVarReturnValue, body, r.Header.Get("Content-Type"))
 		if err == nil {
 			return localVarReturnValue, err
 		}
 	}
 
-	if localVarHttpResponse.StatusCode >= 300 {
-		newErr := GenericSwaggerError{
-			body:  localVarBody,
-			error: localVarHttpResponse.Status,
-		}
-		if localVarHttpResponse.StatusCode == 200 {
-			var v Variable
-			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.error = err.Error()
-				return defaultRetVal, newErr
-			}
-			newErr.model = v
-			return defaultRetVal, newErr
-		}
-		if localVarHttpResponse.StatusCode == 400 {
-			var v ErrorResponse
-			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.error = err.Error()
-				return defaultRetVal, newErr
-			}
-			newErr.model = v
-			return defaultRetVal, newErr
-		}
-		if localVarHttpResponse.StatusCode == 401 {
-			var v ErrorResponse
-			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.error = err.Error()
-				return defaultRetVal, newErr
-			}
-			newErr.model = v
-			return defaultRetVal, newErr
-		}
-		if localVarHttpResponse.StatusCode == 404 {
-			var v ErrorResponse
-			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.error = err.Error()
-				return defaultRetVal, newErr
-			}
-			newErr.model = v
-			return defaultRetVal, newErr
-		}
-		if localVarHttpResponse.StatusCode == 500 {
-			var v ErrorResponse
-			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.error = err.Error()
-				return defaultRetVal, newErr
-			}
-			newErr.model = v
-			return defaultRetVal, newErr
-		}
-		return defaultRetVal, newErr
+	var v ErrorResponse
+	err = a.client.decode(&v, body, r.Header.Get("Content-Type"))
+	if err != nil {
+		log.Println(err.Error())
+		return defaultRetVal, nil
 	}
-
-	return localVarReturnValue, nil
+	log.Println(v.Message)
+	return defaultRetVal, nil
 }
 
 func (a *DVCClientService) AllVariables(ctx context.Context, body UserData) (map[string]Variable, error) {
@@ -349,8 +178,6 @@ func (a *DVCClientService) AllVariables(ctx context.Context, body UserData) (map
 	var (
 		localVarHttpMethod  = strings.ToUpper("Post")
 		localVarPostBody    interface{}
-		localVarFileName    string
-		localVarFileBytes   []byte
 		localVarReturnValue map[string]Variable
 	)
 	if !a.client.DevCycleOptions.EnableCloudBucketing {
@@ -366,123 +193,22 @@ func (a *DVCClientService) AllVariables(ctx context.Context, body UserData) (map
 
 	localVarHeaderParams := make(map[string]string)
 	localVarQueryParams := url.Values{}
-	localVarFormParams := url.Values{}
 
-	// to determine the Content-Type header
-	localVarHttpContentTypes := []string{"application/json"}
-
-	// set Content-Type header
-	localVarHttpContentType := selectHeaderContentType(localVarHttpContentTypes)
-	if localVarHttpContentType != "" {
-		localVarHeaderParams["Content-Type"] = localVarHttpContentType
-	}
-
-	// to determine the Accept header
-	localVarHttpHeaderAccepts := []string{"application/json"}
-
-	// set Accept header
-	localVarHttpHeaderAccept := selectHeaderAccept(localVarHttpHeaderAccepts)
-	if localVarHttpHeaderAccept != "" {
-		localVarHeaderParams["Accept"] = localVarHttpHeaderAccept
-	}
 	// body params
 	localVarPostBody = &body
-	if ctx != nil {
-		// API Key Authentication
-		if auth, ok := ctx.Value(ContextAPIKey).(APIKey); ok {
-			var key string
-			if auth.Prefix != "" {
-				key = auth.Prefix + " " + auth.Key
-			} else {
-				key = auth.Key
-			}
-			localVarHeaderParams["Authorization"] = key
 
-		}
-	}
-	r, err := a.client.prepareRequest(ctx, localVarPath, localVarHttpMethod, localVarPostBody, localVarHeaderParams, localVarQueryParams, localVarFormParams, localVarFileName, localVarFileBytes)
+	r, rBody, err := a.performRequest(ctx, localVarPath, localVarHttpMethod, localVarPostBody, localVarHeaderParams, localVarQueryParams)
 	if err != nil {
 		return localVarReturnValue, err
 	}
 
-	localVarHttpResponse, err := a.client.callAPI(r)
-	if err != nil || localVarHttpResponse == nil {
-		return localVarReturnValue, err
-	}
-
-	localVarBody, err := ioutil.ReadAll(localVarHttpResponse.Body)
-	localVarHttpResponse.Body.Close()
-	if err != nil {
-		return localVarReturnValue, err
-	}
-
-	if localVarHttpResponse.StatusCode < 300 {
+	if r.StatusCode < 300 {
 		// If we succeed, return the data, otherwise pass on to decode error.
-		err = a.client.decode(&localVarReturnValue, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
-		if err == nil {
-			return localVarReturnValue, err
-		}
+		err = a.client.decode(&localVarReturnValue, rBody, r.Header.Get("Content-Type"))
+		return localVarReturnValue, err
 	}
 
-	if localVarHttpResponse.StatusCode >= 300 {
-		newErr := GenericSwaggerError{
-			body:  localVarBody,
-			error: localVarHttpResponse.Status,
-		}
-		if localVarHttpResponse.StatusCode == 200 {
-			var v map[string]Variable
-			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.error = err.Error()
-				return localVarReturnValue, newErr
-			}
-			newErr.model = v
-			return localVarReturnValue, newErr
-		}
-		if localVarHttpResponse.StatusCode == 400 {
-			var v ErrorResponse
-			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.error = err.Error()
-				return localVarReturnValue, newErr
-			}
-			newErr.model = v
-			return localVarReturnValue, newErr
-		}
-		if localVarHttpResponse.StatusCode == 401 {
-			var v ErrorResponse
-			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.error = err.Error()
-				return localVarReturnValue, newErr
-			}
-			newErr.model = v
-			return localVarReturnValue, newErr
-		}
-		if localVarHttpResponse.StatusCode == 404 {
-			var v ErrorResponse
-			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.error = err.Error()
-				return localVarReturnValue, newErr
-			}
-			newErr.model = v
-			return localVarReturnValue, newErr
-		}
-		if localVarHttpResponse.StatusCode == 500 {
-			var v ErrorResponse
-			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.error = err.Error()
-				return localVarReturnValue, newErr
-			}
-			newErr.model = v
-			return localVarReturnValue, newErr
-		}
-		return localVarReturnValue, newErr
-	}
-
-	return localVarReturnValue, nil
+	return nil, a.handleError(r, rBody)
 }
 
 /*
@@ -509,9 +235,8 @@ func (a *DVCClientService) Track(ctx context.Context, user UserData, event DVCEv
 	var (
 		localVarHttpMethod = strings.ToUpper("Post")
 		localVarPostBody   interface{}
-		localVarFileName   string
-		localVarFileBytes  []byte
 	)
+
 	events := []DVCEvent{event}
 	body := UserDataAndEventsBody{User: &user, Events: events}
 	// create path and map variables
@@ -519,111 +244,26 @@ func (a *DVCClientService) Track(ctx context.Context, user UserData, event DVCEv
 
 	localVarHeaderParams := make(map[string]string)
 	localVarQueryParams := url.Values{}
-	localVarFormParams := url.Values{}
 
-	// to determine the Content-Type header
-	localVarHttpContentTypes := []string{"application/json"}
-
-	// set Content-Type header
-	localVarHttpContentType := selectHeaderContentType(localVarHttpContentTypes)
-	if localVarHttpContentType != "" {
-		localVarHeaderParams["Content-Type"] = localVarHttpContentType
-	}
-
-	// to determine the Accept header
-	localVarHttpHeaderAccepts := []string{"application/json"}
-
-	// set Accept header
-	localVarHttpHeaderAccept := selectHeaderAccept(localVarHttpHeaderAccepts)
-	if localVarHttpHeaderAccept != "" {
-		localVarHeaderParams["Accept"] = localVarHttpHeaderAccept
-	}
 	// body params
 	localVarPostBody = &body
-	if ctx != nil {
-		// API Key Authentication
-		if auth, ok := ctx.Value(ContextAPIKey).(APIKey); ok {
-			var key string
-			if auth.Prefix != "" {
-				key = auth.Prefix + " " + auth.Key
-			} else {
-				key = auth.Key
-			}
-			localVarHeaderParams["Authorization"] = key
 
-		}
-	}
-	r, err := a.client.prepareRequest(ctx, localVarPath, localVarHttpMethod, localVarPostBody, localVarHeaderParams, localVarQueryParams, localVarFormParams, localVarFileName, localVarFileBytes)
+	r, rBody, err := a.performRequest(ctx, localVarPath, localVarHttpMethod, localVarPostBody, localVarHeaderParams, localVarQueryParams)
 	if err != nil {
 		return false, err
 	}
 
-	localVarHttpResponse, err := a.client.callAPI(r)
-	if err != nil || localVarHttpResponse == nil {
-		return false, err
-	}
-
-	localVarBody, err := ioutil.ReadAll(localVarHttpResponse.Body)
-	localVarHttpResponse.Body.Close()
-	if err != nil {
-		return false, err
-	}
-
-	if localVarHttpResponse.StatusCode < 300 {
+	if r.StatusCode < 300 {
 		// If we succeed, return the data, otherwise pass on to decode error.
-		err = a.client.decode(nil, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
+		err = a.client.decode(nil, rBody, r.Header.Get("Content-Type"))
 		if err == nil {
 			return false, err
+		} else {
+			return true, nil
 		}
-	} else if localVarHttpResponse.StatusCode >= 300 {
-		newErr := GenericSwaggerError{
-			body:  localVarBody,
-			error: localVarHttpResponse.Status,
-		}
-		if localVarHttpResponse.StatusCode == 400 {
-			var v ErrorResponse
-			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.error = err.Error()
-				return false, newErr
-			}
-			newErr.model = v
-			return false, newErr
-		}
-		if localVarHttpResponse.StatusCode == 401 {
-			var v ErrorResponse
-			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.error = err.Error()
-				return false, newErr
-			}
-			newErr.model = v
-			return false, newErr
-		}
-		if localVarHttpResponse.StatusCode == 404 {
-			var v ErrorResponse
-			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.error = err.Error()
-				return false, newErr
-			}
-			newErr.model = v
-			return false, newErr
-		}
-		if localVarHttpResponse.StatusCode == 500 {
-			var v ErrorResponse
-			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.error = err.Error()
-				return false, newErr
-			}
-			newErr.model = v
-			return false, newErr
-		}
-		return false, newErr
 	}
 
-	return true, nil
+	return false, a.handleError(r, rBody)
 }
 
 func (a *DVCClientService) FlushEvents() error {
@@ -651,4 +291,72 @@ func (a *DVCClientService) Close() (err error) {
 	err = a.client.eventQueue.Close()
 	a.client.configManager.Close()
 	return err
+}
+
+func (a *DVCClientService) performRequest(
+	ctx context.Context,
+	path string, method string,
+	postBody interface{},
+	headerParams map[string]string,
+	queryParams url.Values,
+) (response *http.Response, body []byte, err error) {
+	headerParams["Content-Type"] = "application/json"
+	headerParams["Accept"] = "application/json"
+
+	if ctx != nil {
+		// API Key Authentication
+		if auth, ok := ctx.Value(ContextAPIKey).(APIKey); ok {
+			var key string
+			if auth.Prefix != "" {
+				key = auth.Prefix + " " + auth.Key
+			} else {
+				key = auth.Key
+			}
+			headerParams["Authorization"] = key
+
+		}
+	}
+
+	r, err := a.client.prepareRequest(
+		ctx,
+		path,
+		method,
+		postBody,
+		headerParams,
+		queryParams,
+	)
+
+	if err != nil {
+		return nil, nil, err
+	}
+
+	localVarHttpResponse, err := a.client.callAPI(r)
+	if err != nil || localVarHttpResponse == nil {
+		return nil, nil, err
+	}
+
+	localVarBody, err := ioutil.ReadAll(localVarHttpResponse.Body)
+	localVarHttpResponse.Body.Close()
+
+	if err != nil {
+		return nil, nil, err
+	}
+
+	return localVarHttpResponse, localVarBody, err
+}
+
+func (a *DVCClientService) handleError(r *http.Response, body []byte) (err error) {
+	newErr := GenericSwaggerError{
+		body:  body,
+		error: r.Status,
+	}
+
+	var v ErrorResponse
+	err = a.client.decode(&v, body, r.Header.Get("Content-Type"))
+	if err != nil {
+		newErr.error = err.Error()
+		return newErr
+	}
+	newErr.model = v
+	return newErr
 }
